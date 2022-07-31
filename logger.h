@@ -453,6 +453,11 @@ reallogobject(int behave_type, ...)
 
     JSON_STRUCT root = json_object();
     JSON_OBJECT_ADD("timestamp", json_integer(now));
+
+#ifdef THREAD_ENABLE
+    JSON_OBJECT_ADD("thread_id", json_integer(pthread_self()));
+#endif
+
     va_start(ap, behave_type);
 
     for (int i = 1;; i++) {
