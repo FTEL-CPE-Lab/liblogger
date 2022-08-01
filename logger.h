@@ -553,7 +553,7 @@ reallogarray(int behave_type, ...)
             default:
             break;
         }  
-        object_field_free(arg);
+        array_field_free(arg);
         continue;
     }
 
