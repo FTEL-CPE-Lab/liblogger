@@ -93,9 +93,9 @@ static enum {
 } object_behave_types;
 
 static enum { 
+    LOG_NO_ACTION,
     LOG_OPEN, 
     LOG_CLOSE,
-    LOG_NO_ACTION,
     LOG_FAIL
 } log_behave_types;
 /**
@@ -513,7 +513,7 @@ reallogobject(int behave_type, ...)
         wc = fprintf(log_output, "%s\n", json_2_str);
     }
     else
-        wc = NULL;
+        wc = LOG_NO_ACTION;
 #ifdef THREAD_ENABLE
     pthread_mutex_unlock(&lock_edit_log);
 #endif
@@ -569,7 +569,7 @@ reallogarray(int behave_type, ...)
         wc = fprintf(log_output, "%s\n", json_2_str);
     }
     else
-        wc = NULL;
+        wc = LOG_NO_ACTION;
 #ifdef THREAD_ENABLE
     pthread_mutex_unlock(&lock_edit_log);
 #endif
