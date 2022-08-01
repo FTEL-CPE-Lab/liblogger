@@ -58,7 +58,7 @@
 #define JSON_IS_STRING(x)           json_is_string(x)
 #define JSON_IS_BOOLEAN(x)          json_is_boolean(x)
 #define JSON_IS_REAL(x)             json_is_real(x)
-#define JSON_COPY(x)                json_copy(x)
+#define JSON_COPY(x)                json_deep_copy(x)
 #define JSON_STRUCT                 json_t*
 
 #endif
@@ -70,7 +70,7 @@
  */   
 #include <pthread.h>
 
-static pthread_mutex_t lock_write_log = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t lock_edit_log = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
 #endif
 /**
@@ -92,6 +92,12 @@ static enum {
     LOG_COPY
 } object_behave_types;
 
+static enum { 
+    LOG_OPEN, 
+    LOG_CLOSE,
+    LOG_NO_ACTION,
+    LOG_FAIL
+} log_behave_types;
 /**
  * object_field_t represents a field in a log entry and it's
  * associated type.
@@ -176,27 +182,43 @@ reallarray(int behave_type, ...);
  * log_init initializes the logger and sets up
  * where the logger writes to.
  */
-void
+int
 log_init(const char* file_name)
 {
+    int wc;
+#ifdef THREAD_ENABLE
+    while(pthread_mutex_lock(&lock_edit_log) != 0){ usleep(1); }
+#endif
     if(!log_output){
         log_output = fopen(file_name, "a+");
-        if(!log_output){
-            perror("open log fail\n");
-            exit(1);
-        }
+        wc = (log_output != NULL) ? LOG_OPEN : LOG_FAIL;
     }
     else
-        printf("old log not closed yet!");
+        wc = LOG_NO_ACTION;
+#ifdef THREAD_ENABLE
+    pthread_mutex_unlock(&lock_edit_log);
+#endif
+    return wc;
 }
 
-void
+int
 log_close()
 {
-    if(log_output)
-        fclose(log_output);
+    int wc;
+#ifdef THREAD_ENABLE
+    while(pthread_mutex_lock(&lock_edit_log) != 0){ usleep(1); }
+#endif
+    if(log_output){
+        int close_con = fclose(log_output);
+        wc = (close_con == NULL) ? LOG_CLOSE : LOG_FAIL;
+        log_output = NULL;
+    }
     else
-        printf("no log open yet!");   
+        wc = LOG_NO_ACTION;
+#ifdef THREAD_ENABLE
+    pthread_mutex_unlock(&lock_edit_log);
+#endif
+    return wc;
 }
 
 /**
@@ -448,7 +470,7 @@ int
 reallogobject(int behave_type, ...)
 {
     va_list ap;
-
+    int wc;
     unsigned long now = (unsigned long)time(NULL); // UNIX timestamp format
 
     JSON_STRUCT root = JSON_OBJECT();
@@ -484,14 +506,16 @@ reallogobject(int behave_type, ...)
     char* json_2_str = JSON_DUMPS(root);
 
 #ifdef THREAD_ENABLE
-    while(pthread_mutex_lock(lock_write_log) != 0){ usleep(10); }
+    while(pthread_mutex_lock(&lock_edit_log) != 0){ usleep(1); }
 #endif
-
-    fflush(log_output);
-    int wc = fprintf(log_output, "%s\n", json_2_str);
-
+    if(log_output){
+        fflush(log_output);
+        wc = fprintf(log_output, "%s\n", json_2_str);
+    }
+    else
+        wc = NULL;
 #ifdef THREAD_ENABLE
-    pthread_mutex_unlock(lock_write_log);
+    pthread_mutex_unlock(&lock_edit_log);
 #endif
 
     free(json_2_str);
@@ -509,7 +533,7 @@ int
 reallogarray(int behave_type, ...)
 {
     va_list ap;
-
+    int wc;
     JSON_STRUCT root = JSON_ARRAY();
 
     va_start(ap, behave_type);
@@ -538,14 +562,16 @@ reallogarray(int behave_type, ...)
     char* json_2_str = JSON_DUMPS(root);
 
 #ifdef THREAD_ENABLE
-    while(pthread_mutex_lock(lock_write_log) != 0){ usleep(10); }
+    while(pthread_mutex_lock(&lock_edit_log) != 0){ usleep(1); }
 #endif
-
-    fflush(log_output);
-    int wc = fprintf(log_output, "%s\n", json_2_str);
-
+    if(log_output){
+        fflush(log_output);
+        wc = fprintf(log_output, "%s\n", json_2_str);
+    }
+    else
+        wc = NULL;
 #ifdef THREAD_ENABLE
-    pthread_mutex_unlock(lock_write_log);
+    pthread_mutex_unlock(&lock_edit_log);
 #endif
 
     free(json_2_str);
