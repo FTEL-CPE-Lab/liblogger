@@ -451,7 +451,7 @@ reallogobject(int behave_type, ...)
 
     unsigned long now = (unsigned long)time(NULL); // UNIX timestamp format
 
-    JSON_STRUCT root = json_object();
+    JSON_STRUCT root = JSON_OBJECT();
     JSON_OBJECT_ADD("timestamp", json_integer(now));
 
 #ifdef THREAD_ENABLE
@@ -510,7 +510,7 @@ reallogarray(int behave_type, ...)
 {
     va_list ap;
 
-    JSON_STRUCT root = json_array();
+    JSON_STRUCT root = JSON_ARRAY();
 
     va_start(ap, behave_type);
 
