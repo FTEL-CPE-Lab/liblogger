@@ -1,6 +1,6 @@
 CC = cc
 
-CFLAGS  = -std=c99 -O2 -Wall -I/mnt/local/include -DHAVE_JANSSON -DTHREAD_ENABLE -fsanitize=address
+CFLAGS  = -std=c99 -O2 -Wall -I/mnt/local/include -DHAVE_JANSSON -DTHREAD_ENABLE
 LDFLAGS = -ljansson -L/mnt/local/lib -lpthread
 
 NAME = liblogger
