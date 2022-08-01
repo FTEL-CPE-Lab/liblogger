@@ -79,13 +79,13 @@ main(int argc, char **argv)
             );
 
         json_array_add(proot, root);
-        // log_object(LOG_COPY, 
-        //     object_array("data", proot)
-        // );
-
-        log_array(LOG_COPY, 
-            array_array(proot)
+        log_object(LOG_COPY, 
+            object_array("data", proot)
         );
+
+        // log_array(LOG_COPY, 
+        //     array_array(proot)
+        // );
 
         char *ptr = JSON_DUMPS(root);
         printf("LOG: %s\n", ptr);
