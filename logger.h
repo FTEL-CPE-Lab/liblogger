@@ -475,10 +475,10 @@ reallogobject(int behave_type, ...)
     unsigned long now = (unsigned long)time(NULL); // UNIX timestamp format
 
     JSON_STRUCT root = JSON_OBJECT();
-    JSON_OBJECT_ADD("timestamp", json_integer(now));
+    JSON_OBJECT_ADD("timestamp", JSON_INTEGER(now));
 
 #ifdef THREAD_ENABLE
-    JSON_OBJECT_ADD("thread_id", json_integer(pthread_self()));
+    JSON_OBJECT_ADD("thread_id", JSON_INTEGER(pthread_self()));
 #endif
 
     va_start(ap, behave_type);
