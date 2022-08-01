@@ -48,6 +48,7 @@
 #define JSON_REAL(x)                json_real(x)
 #define JSON_OBJECT()               json_object()
 #define JSON_ARRAY()                json_array()
+#define JSON_ARRAY_SIZE(x)          json_array_size(x)
 #define JSON_TRUE()                 json_true()
 #define JSON_FALSE()                json_false()
 #define JSON_DUMPS(x)               json_dumps(x, 0)
